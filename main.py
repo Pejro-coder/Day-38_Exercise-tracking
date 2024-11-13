@@ -1,22 +1,29 @@
+import os
+
 import requests
 import datetime as dt
+from dotenv import load_dotenv
 
-APP_ID = "3c5c0ee9"
-API_KEY = "db0c282d630500a140fa612f17eab98e"
-NUTRI_ENDPOINT = "https://trackapi.nutritionix.com/v2/natural/exercise"
-SHEETY_ENDPOINT = "https://api.sheety.co/0fd8b882fdcc644ed28a11adcf6f5b4c/myWorkouts/workouts"
+load_dotenv("C:/Users/peter/EnvironmentVariables/.env")
+
+NUTRI_APP_ID = os.getenv("NUTRI_APP_ID")
+NUTRI_API_KEY = os.getenv("NUTRI_API_KEY")
+NUTRI_ENDPOINT = os.getenv("NUTRI_ENDPOINT")
+SHEETY_ENDPOINT = os.getenv("SHEETY_ENDPOINT")
+SHEETY_BEARER_TOKEN = os.getenv("SHEETY_BEARER_TOKEN")
+
 
 # ------------------------------ nutritionix ------------------------------
-# answer = input("Describe your today's exercise: ")
+answer = input("Describe your today's exercise: ")
 
 headers = {
-    "x-app-id": APP_ID,
-    "x-app-key": API_KEY,
+    "x-app-id": NUTRI_APP_ID,
+    "x-app-key": NUTRI_API_KEY,
     "Content-Type": "application/json"
 }
 
 data = {
-    "query": "running for 10 minutes",  # Example plain text input for exercise
+    "query": answer,
     "weight_kg": 70,
     "height_cm": 174,
     "age": 33
@@ -31,14 +38,9 @@ print(data)
 exercise = data["exercises"][0]["name"].title()
 duration = round(data["exercises"][0]["duration_min"], 0)
 calories = round(data["exercises"][0]["nf_calories"], 0)
-print("exercise:", exercise, duration, calories)
+# print("exercise:", exercise, duration, calories)
 
 # ------------------------------ sheety ------------------------------
-
-response = requests.get(url="https://api.sheety.co/0fd8b882fdcc644ed28a11adcf6f5b4c/myWorkouts/workouts/2")
-response.raise_for_status()
-data = response.json()
-
 today_date = dt.datetime.now().strftime("%d/%m/%Y")
 current_time = dt.datetime.now().strftime("%H:%M:%S")
 
@@ -51,12 +53,15 @@ json_data = {
         "calories": calories,
     }
 }
-MY_TOKEN = ""
+
 headers = {
-    "Authorization": f"Bearer {MY_TOKEN}"
+    "Authorization": f"Bearer {SHEETY_BEARER_TOKEN}"
 }
 
-post_response = requests.post(url=SHEETY_ENDPOINT, json=json_data, auth=("", ""))
-# post_response = requests.post(url=SHEETY_ENDPOINT, json=json_data, headers=headers)
+response = requests.get(url=SHEETY_ENDPOINT, headers=headers)
+response.raise_for_status()
+data = response.json()
+
+# post_response = requests.post(url=SHEETY_ENDPOINT, json=json_data, auth=("Peter", "Peter3211213"))
+post_response = requests.post(url=SHEETY_ENDPOINT, json=json_data, headers=headers)
 post_response.raise_for_status()
-print(response.text)
